@@ -3,13 +3,12 @@ import aws_cdk as cdk
 from aws_cdk import (
     Stack,
     aws_route53 as route53,
-
-    )
+)
 from aws_cdk.aws_route53_targets import LoadBalancerTarget
-from ..fargate_app import BonjourFargate
-from ..healthcheck_alarm import HealthCheckAlarm
+from fargate_app.fargate_app_stack import FargateAppStack
+from healthcheck_alarm.healthcheck_alarm_stack import HealthcheckAlarmStack
 
-class Route53FailoverStack(Sta1ck):
+class Route53FailoverStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, domain: str, email:str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -19,7 +18,7 @@ class Route53FailoverStack(Sta1ck):
 
 
         # Sample app 1
-        app1 = BonjourFargate(self, "PrimaryFargateApp", env=cdk.Environment(
+        app1 = FargateAppStack(self, "PrimaryFargateApp", env=cdk.Environment(
             account=self.account,
             region=self.region
         ))
@@ -31,7 +30,7 @@ class Route53FailoverStack(Sta1ck):
         ))
 
         # Sample app 2
-        app2 = BonjourFargate(self, "SecondaryFargateApp", env=cdk.Environment(
+        app2 = FargateAppStack(self, "SecondaryFargateApp", env=cdk.Environment(
             account=self.account,
             region=self.region
         ))
@@ -68,7 +67,7 @@ class Route53FailoverStack(Sta1ck):
         secondaryRecordSet.set_identifier = "Secondary"
 
 
-        HealthCheckAlarm(self, "HealthCheckAlarm",
+        HealthcheckAlarmStack(self, "HealthCheckAlarm",
                  cfnHealthCheck=self.primaryHealthCheck,
                  email=email,
                  env=cdk.Environment(
